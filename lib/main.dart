@@ -1,43 +1,49 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(SnackBarDemo());
+void main() {
+  runApp(MyApp());
+}
 
-class SnackBarDemo extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final appTitle = 'Orientation Demo';
+
     return MaterialApp(
-      title: 'SnackBar Demo',
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('SnackBar Demo'),
-        ),
-        body: SnackBarPage(),
+      title: appTitle,
+      home: OrientationList(
+        title: appTitle,
       ),
     );
   }
 }
 
-class SnackBarPage extends StatelessWidget {
+class OrientationList extends StatelessWidget {
+  final String title;
+
+  OrientationList({Key key, this.title}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () {
-          final snackBar = SnackBar(
-            content: Text('Yay! A SnackBar!'),
-            action: SnackBarAction(
-              label: 'Undo',
-              onPressed: () {
-                // Some code to undo the change.
-              },
-            ),
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: OrientationBuilder(
+        builder: (context, orientation) {
+          return GridView.count(
+            // Create a grid with 2 columns in portrait mode, or 3 columns in
+            // landscape mode.
+            crossAxisCount: orientation == Orientation.portrait ? 2 : 3,
+            // Generate 100 widgets that display their index in the List.
+            children: List.generate(100, (index) {
+              return Center(
+                child: Text(
+                  'Item $index',
+                  style: Theme.of(context).textTheme.headline1,
+                ),
+              );
+            }),
           );
-
-          // Find the Scaffold in the widget tree and use
-          // it to show a SnackBar.
-          Scaffold.of(context).showSnackBar(snackBar);
         },
-        child: Text('Show SnackBar'),
       ),
     );
   }
