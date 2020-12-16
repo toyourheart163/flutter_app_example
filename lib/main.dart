@@ -1,57 +1,48 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(HeroApp());
-
-class HeroApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Transition Demo',
-      home: MainScreen(),
-    );
-  }
+void main() {
+  runApp(MaterialApp(
+    title: 'Navigation Basics',
+    home: FirstRoute(),
+  ));
 }
 
-class MainScreen extends StatelessWidget {
+class FirstRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Main Screen'),
+        title: Text('First Route'),
       ),
-      body: GestureDetector(
-        child: Hero(
-          tag: 'imageHero',
-          child: Image.network(
-	    'https://tse1-mm.cn.bing.net/th/id/OET.faa04cc1480c472e9404804041e588d2',
-          ),
+      body: Center(
+        child: ElevatedButton(
+          child: Text('Open route'),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SecondRoute()),
+            );
+          },
         ),
-        onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) {
-            return DetailScreen();
-          }));
-        },
       ),
     );
   }
 }
 
-class DetailScreen extends StatelessWidget {
+class SecondRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GestureDetector(
-        child: Center(
-          child: Hero(
-            tag: 'imageHero',
-            child: Image.network(
-	      'https://tse1-mm.cn.bing.net/th/id/OET.faa04cc1480c472e9404804041e588d2',
-            ),
-          ),
+      appBar: AppBar(
+        title: Text("Second Route"),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text('Go back!'),
         ),
-        onTap: () {
-          Navigator.pop(context);
-        },
       ),
     );
   }
