@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
-void main() {
-  runApp(MyApp());
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final title = 'Cached Images';
+    final title = 'Basic List';
 
     return MaterialApp(
       title: title,
@@ -16,15 +13,23 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(
           title: Text(title),
         ),
-        body: Center(
-          child: CachedNetworkImage(
-            placeholder: (context, url) => CircularProgressIndicator(),
-            imageUrl:
-		'https://tse1-mm.cn.bing.net/th/id/OET.faa04cc1480c472e9404804041e588d2',
-          ),
+        body: ListView(
+          children: <Widget>[
+            ListTile(
+              leading: Icon(Icons.map),
+              title: Text('Map'),
+            ),
+            ListTile(
+              leading: Icon(Icons.photo_album),
+              title: Text('Album'),
+            ),
+            ListTile(
+              leading: Icon(Icons.phone),
+              title: Text('Phone'),
+            ),
+          ],
         ),
       ),
     );
   }
 }
-
