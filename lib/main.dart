@@ -1,83 +1,48 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(MyApp(
-    items: List<ListItem>.generate(
-      1000,
-      (i) => i % 6 == 0
-          ? HeadingItem("Heading $i")
-          : MessageItem("Sender $i", "Message body $i"),
-    ),
-  ));
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  final List<ListItem> items;
-
-  MyApp({Key key, @required this.items}) : super(key: key);
+  MyApp({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final title = 'Mixed List';
+    final title = 'Floating App Bar';
 
     return MaterialApp(
       title: title,
       home: Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-        ),
-        body: ListView.builder(
-          // Let the ListView know how many items it needs to build.
-          itemCount: items.length,
-          // Provide a builder function. This is where the magic happens.
-          // Convert each item into a widget based on the type of item it is.
-          itemBuilder: (context, index) {
-            final item = items[index];
-
-            return ListTile(
-              title: item.buildTitle(context),
-              subtitle: item.buildSubtitle(context),
-            );
-          },
+        // No appbar provided to the Scaffold, only a body with a
+        // CustomScrollView.
+        body: CustomScrollView(
+          slivers: <Widget>[
+            // Add the app bar to the CustomScrollView.
+            SliverAppBar(
+              // Provide a standard title.
+              title: Text(title),
+              // Allows the user to reveal the app bar if they begin scrolling
+              // back up the list of items.
+              floating: true,
+              // Display a placeholder widget to visualize the shrinking size.
+              flexibleSpace: Placeholder(),
+              // Make the initial height of the SliverAppBar larger than normal.
+              expandedHeight: 200,
+            ),
+            // Next, create a SliverList
+            SliverList(
+              // Use a delegate to build items as they're scrolled on screen.
+              delegate: SliverChildBuilderDelegate(
+                // The builder function returns a ListTile with a title that
+                // displays the index of the current item.
+                (context, index) => ListTile(title: Text('Item #$index')),
+                // Builds 1000 ListTiles
+                childCount: 1000,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
-
-/// The base class for the different types of items the list can contain.
-abstract class ListItem {
-  /// The title line to show in a list item.
-  Widget buildTitle(BuildContext context);
-
-  /// The subtitle line, if any, to show in a list item.
-  Widget buildSubtitle(BuildContext context);
-}
-
-/// A ListItem that contains data to display a heading.
-class HeadingItem implements ListItem {
-  final String heading;
-
-  HeadingItem(this.heading);
-
-  Widget buildTitle(BuildContext context) {
-    return Text(
-      heading,
-      style: Theme.of(context).textTheme.headline5,
-    );
-  }
-
-  Widget buildSubtitle(BuildContext context) => null;
-}
-
-/// A ListItem that contains data to display a message.
-class MessageItem implements ListItem {
-  final String sender;
-  final String body;
-
-  MessageItem(this.sender, this.body);
-
-  Widget buildTitle(BuildContext context) => Text(sender);
-
-  Widget buildSubtitle(BuildContext context) => Text(body);
 }
