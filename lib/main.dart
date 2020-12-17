@@ -1,85 +1,99 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-Future<Album> fetchAlbum() async {
+Future<List<Photo>> fetchPhotos(http.Client client) async {
   final response =
-      await http.get('https://jsonplaceholder.typicode.com/albums/1');
+      await client.get('https://jsonplaceholder.typicode.com/photos');
 
-  if (response.statusCode == 200) {
-    // If the server did return a 200 OK response,
-    // then parse the JSON.
-    return Album.fromJson(jsonDecode(response.body));
-  } else {
-    // If the server did not return a 200 OK response,
-    // then throw an exception.
-    throw Exception('Failed to load album');
-  }
+  // Use the compute function to run parsePhotos in a separate isolate.
+  return compute(parsePhotos, response.body);
 }
 
-class Album {
-  final int userId;
+// A function that converts a response body into a List<Photo>.
+List<Photo> parsePhotos(String responseBody) {
+  final parsed = jsonDecode(responseBody).cast<Map<String, dynamic>>();
+
+  return parsed.map<Photo>((json) => Photo.fromJson(json)).toList();
+}
+
+class Photo {
+  final int albumId;
   final int id;
   final String title;
+  final String url;
+  final String thumbnailUrl;
 
-  Album({this.userId, this.id, this.title});
+  Photo({this.albumId, this.id, this.title, this.url, this.thumbnailUrl});
 
-  factory Album.fromJson(Map<String, dynamic> json) {
-    return Album(
-      userId: json['userId'],
-      id: json['id'],
-      title: json['title'],
+  factory Photo.fromJson(Map<String, dynamic> json) {
+    return Photo(
+      albumId: json['albumId'] as int,
+      id: json['id'] as int,
+      title: json['title'] as String,
+      url: json['url'] as String,
+      thumbnailUrl: json['thumbnailUrl'] as String,
     );
   }
 }
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatefulWidget {
-  MyApp({Key key}) : super(key: key);
-
+class MyApp extends StatelessWidget {
   @override
-  _MyAppState createState() => _MyAppState();
+  Widget build(BuildContext context) {
+    final appTitle = 'Isolate Demo';
+
+    return MaterialApp(
+      title: appTitle,
+      home: MyHomePage(title: appTitle),
+    );
+  }
 }
 
-class _MyAppState extends State<MyApp> {
-  Future<Album> futureAlbum;
+class MyHomePage extends StatelessWidget {
+  final String title;
 
-  @override
-  void initState() {
-    super.initState();
-    futureAlbum = fetchAlbum();
-  }
+  MyHomePage({Key key, this.title}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Fetch Data Example',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Fetch Data Example'),
-        ),
-        body: Center(
-          child: FutureBuilder<Album>(
-            future: futureAlbum,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Text(snapshot.data.title);
-              } else if (snapshot.hasError) {
-                return Text("${snapshot.error}");
-              }
+      body: FutureBuilder<List<Photo>>(
+        future: fetchPhotos(http.Client()),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) print(snapshot.error);
 
-              // By default, show a loading spinner.
-              return CircularProgressIndicator();
-            },
-          ),
-        ),
+          return snapshot.hasData
+              ? PhotosList(photos: snapshot.data)
+              : Center(child: CircularProgressIndicator());
+        },
       ),
+    );
+  }
+}
+
+class PhotosList extends StatelessWidget {
+  final List<Photo> photos;
+
+  PhotosList({Key key, this.photos}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+      ),
+      itemCount: photos.length,
+      itemBuilder: (context, index) {
+        return Image.network(photos[index].thumbnailUrl);
+      },
     );
   }
 }
